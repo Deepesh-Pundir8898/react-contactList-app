@@ -1,7 +1,7 @@
 import React from 'react'
 import Header from '../../Components/Header/Header'
 import ContactList from '../../Components/main/ContactList/ContactList'
-import Sidebar from '../../Components/main/Sidebar/sidebar'
+import Sidebar from '../../Components/main/Sidebar/Sidebar'
 import "./Layout.css"
 
 export const Layout = () => {
