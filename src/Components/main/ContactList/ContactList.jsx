@@ -1,9 +1,40 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react';
 import './ContactList.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchContacts, deleteContact, updateContact, toggleFavoriteContact } from '../../../store/contact-slice';
 
-const ContactList = () => {
+const ContactList = ({ setSelectedContact }) => {
+  const dispatch = useDispatch();
+  const contacts = useSelector((state) => state.contact.items);
+  const status = useSelector((state) => state.contact.status);
+  const error = useSelector((state) => state.contact.error);
+  const [showFavorites, setShowFavorites] = useState(false);
+
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchContacts());
+    }
+  }, [status, dispatch]);
+
+  const deleteContactHandler = (id) => {
+    dispatch(deleteContact(id));
+  };
+
+  const updateContactHandler = (contact) => {
+    setSelectedContact(contact);
+  };
+
+  const toggleFavoriteHandler = (id) => {
+    dispatch(toggleFavoriteContact(id));
+  };
+
+  const displayedContacts = showFavorites ? contacts.filter(c => c.favorite) : contacts;
+
   return (
     <div className='contact-list'>
+      <button onClick={() => setShowFavorites(!showFavorites)}>
+        {showFavorites ? "Show All Contacts" : "Show Favorites"}
+      </button>
       <table>
         <thead>
           <tr>
@@ -15,27 +46,31 @@ const ContactList = () => {
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>
-              <div className='profile-img-box'>
-                <i className='fa-solid fa-user'></i>
-              </div>
-            </td>
-            <td><h2>John</h2></td>
-            <td><h2>Wan</h2></td>
-            <td><h2>3847281928</h2></td>
-            <td>
-              <div>
-                <i className='fa-solid fa-pen'></i>
-                <i className='fa-solid fa-trash'></i>
-                <i className='fa-solid fa-heart'></i>
-              </div>
-            </td>
-          </tr>
+          {status === 'loading' && <tr><td colSpan="5">Loading...</td></tr>}
+          {error && <tr><td colSpan="5">Error: {error}</td></tr>}
+          {displayedContacts.map((contact) => (
+            <tr key={contact.id}>
+              <td>
+                <div className='profile-img-box'>
+                  <i className='fa-solid fa-user'></i>
+                </div>
+              </td>
+              <td><h2>{contact.name}</h2></td>
+              <td><h2>{contact.surname}</h2></td>
+              <td><h2>{contact.tel}</h2></td>
+              <td>
+                <div>
+                  <i className='fa-solid fa-pen' onClick={() => updateContactHandler(contact)}></i>
+                  <i className='fa-solid fa-trash' onClick={() => deleteContactHandler(contact.id)}></i>
+                  <i className={`fa-solid fa-heart ${contact.favorite ? "favorite" : ""}`} onClick={() => toggleFavoriteHandler(contact.id)} style={{ color: contact.favorite ? "red" : "" }}></i>
+                </div>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
-  )
-}
+  );
+};
 
-export default ContactList
+export default ContactList;
